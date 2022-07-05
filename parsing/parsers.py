@@ -14,36 +14,50 @@ class DocumentParser:
         if verbose:
             print('####\nParsing Content in document {}\n####'.format(basename(self.document)))
         document = Document(basename(self.document))
-        for page in pages:
+
+        for page in pages: # Hope you like indented code
             for container in page:
                 if isinstance(container, LTTextBoxHorizontal):
                     line_buffer = ''
-                    current_title = ''
+                    mapped_buffer = ''  # This might become a map with all the specific text encountered
                     sentences = []
-                    title_style = ''
+                    mapped_type = ''  # might also become a map together with mapped_buffer
+                    potential_end = None
                     for line in container:
                         if isinstance(line, LTTextLine):
                             styles = {}
                             for char in line:
                                 if isinstance(char, LTChar):
+                                    c = char.get_text()
+                                    if potential_end is not None:
+                                        if potential_end == '.' and c == ' ':
+                                            potential_end += c
+                                        elif potential_end == '. ' and c.isupper():
+                                            sentences.append(Sentence(style=styles, content=line_buffer))
+                                            line_buffer = ''
+                                            potential_end = None
+                                        else:
+                                            potential_end = None
                                     if char.fontname not in styles.keys():
                                         styles[char.fontname] = 1
                                     else:
                                         styles[char.fontname] += 1
-
-                                    if char.fontname == self.map[0]['style']: # FIXME this needs to handle all mappings
-                                        current_title += char.get_text()
-                                        title_style = char.fontname
-                                    else:
-                                        line_buffer += char.get_text()
-
-                                    if char.get_text() == '.':
-                                        sentences.append(Sentence(style=styles, content=line_buffer))
-                                        line_buffer = ''
+                                    matched_mapping = False
+                                    for mapped_elt in self.map: # FIXME: I need to refactor this
+                                        if char.fontname == mapped_elt['style']:  # and char.size == mapped_elt['size']
+                                            mapped_buffer += c
+                                            mapped_type = mapped_elt['type']
+                                            matched_mapping = True
+                                    if not matched_mapping:
+                                        line_buffer += c
+                                    if c == '.':
+                                        potential_end = c
                             if verbose:
                                 print('Page {page}: {line} --> {styles}'.format(page=page.pageid,
                                                                                 line=line.get_text(),
                                                                                 styles=styles))
-                    document.add_content(Section(title=Title(style=title_style, content=current_title),
+                    if len(line_buffer) > 0:
+                        sentences.append(Sentence(style=styles, content=line_buffer))
+                    document.add_content(Section(title=Title(style=mapped_type, content=mapped_buffer),
                                                  sentences=sentences))
         return document
