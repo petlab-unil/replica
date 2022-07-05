@@ -38,7 +38,7 @@ def start_parsing(filepath, mapfile, verbose=False):
 
     parsers = []
     for file in files:
-        parsers.append(DocumentParser(file, map))
+        parsers.append(DocumentParser(file, map).parse(verbose))
 
     return parsers
 
@@ -53,7 +53,7 @@ def save_parsing_results(outputs, output_filepath='output/'):
 
     if isdir(output_filepath):
         for output in outputs:
-            with open('/'.join([output_filepath, output['name'] + '.json']), 'w+') as file:
+            with open('/'.join([output_filepath, output.name + '.json']), 'w+') as file:
                 dump(output.to_dict(), file)
     else:
         with open(output_filepath, 'w+') as file:
