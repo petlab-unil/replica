@@ -1,6 +1,19 @@
 class NestedContentStrMixin:
+    """
+    This class implements two methods to better transform the nested structures of the Document into dictionaries
+    that can be later used to print data or output it into documents.
+
+    Methods
+    _______
+    to_dict()
+        This method will return a dictionary structure that also contains the nested elements of lists.
+    """
 
     def to_dict(self):
+        """
+        Creates a dictionary representation of the instance and follows the nested content if any.
+        :return: a dictionary containing all the content of the class and its sub-elements.
+        """
         import types
         attrs = [attr for attr in dir(self) if not type(getattr(self, attr)) == types.MethodType and
                  not attr.startswith('__')]

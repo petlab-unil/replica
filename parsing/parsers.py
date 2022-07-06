@@ -1,10 +1,38 @@
 class DocumentParser:
+    """
+    This class represents a PDF document parser. It will go through the given document and try to detect sentences,
+    titles and sections on the document.
+
+    Attributes
+    ----------
+
+    document: str
+        the path to the PDF document to parse.
+    map: str
+        the path to the JSON map to use in order to detect the specific titles according to the font used.
+
+    Methods
+    _______
+
+    parse(verbose=False)
+        Parses the document and returns a Document class containing the sections, sentences and titles.
+    """
 
     def __init__(self, document, map):
+        """
+        :param document: the path to the PDF document to parse.
+        :param map: the path to the JSON map to use in order to detect the specific titles according to the font used.
+        """
         self.document = document
         self.map = map
 
     def parse(self, verbose=False):
+        """
+        Parses the document and returns a Document class containing the sections, sentences and titles.
+
+        :param verbose: print additional process information or not.
+        :return: an object, instance of the Document class (contains the sections with their titles and sentences).
+        """
         from os.path import basename
         from pdfminer.high_level import extract_pages
         from pdfminer.layout import LTTextBoxHorizontal, LTTextLine, LTChar
@@ -15,7 +43,7 @@ class DocumentParser:
             print('####\nParsing Content in document {}\n####'.format(basename(self.document)))
         document = Document(basename(self.document))
 
-        for page in pages: # Hope you like indented code
+        for page in pages:  # Hope you like indented code
             for container in page:
                 if isinstance(container, LTTextBoxHorizontal):
                     line_buffer = ''
