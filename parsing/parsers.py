@@ -50,6 +50,7 @@ class DocumentParser:
                     mapped_buffer = ''  # This might become a map with all the specific text encountered
                     sentences = []
                     mapped_type = ''  # might also become a map together with mapped_buffer
+                    mapped_accumulators = {}
                     potential_end = None
                     for line in container:
                         if isinstance(line, LTTextLine):
@@ -72,10 +73,16 @@ class DocumentParser:
                                         styles[char.fontname] += 1
                                     matched_mapping = False
                                     for mapped_elt in self.map: # FIXME: I need to refactor this
-                                        if char.fontname == mapped_elt['style']:  # and char.size == mapped_elt['size']
+                                        if char.fontname == mapped_elt['style'] or \
+                                           (c == ' ' and len(mapped_type) > 0):  # and char.size == mapped_elt['size']
                                             mapped_buffer += c
                                             mapped_type = mapped_elt['type']
                                             matched_mapping = True
+                                            if mapped_elt['type'] not in mapped_accumulators.keys():
+                                                mapped_accumulators[mapped_elt['type']] = ''
+                                            mapped_accumulators[mapped_elt['type']] += c
+                                        else:
+                                            mapped_type = ''
                                     if not matched_mapping:
                                         line_buffer += c
                                     if c == '.':
@@ -86,6 +93,11 @@ class DocumentParser:
                                                                                 styles=styles))
                     if len(line_buffer) > 0:
                         sentences.append(Sentence(style=styles, content=line_buffer))
-                    document.add_content(Section(title=Title(style=mapped_type, content=mapped_buffer),
+                    title = None
+                    if 'title' in mapped_accumulators.keys():
+                        title = mapped_accumulators['title']
+                    document.add_content(Section(title=Title(style=mapped_type, content=title),
                                                  sentences=sentences))
+                    mapped_type = ''
+
         return document
