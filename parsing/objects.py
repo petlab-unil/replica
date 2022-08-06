@@ -88,6 +88,7 @@ class Document(NestedContentStrMixin):
         :param name: The name of the document.
         """
         self.name = name
+        self.content = []
 
     def add_content(self, section):
         """
