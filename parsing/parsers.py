@@ -20,6 +20,13 @@ class DocumentParser:
     parse(verbose=False)
         Parses the document and returns a Document class containing the sections, sentences and titles.
     """
+    SUPPORTED_LIGATURES = {
+        0xfb00: u'ff',
+        0xfb01: u'fi',
+        0xfb02: u'fl',
+        0xfb03: u'ffi',
+        0xfb04: u'ffl',
+    }
 
     def __init__(self, document, map):
         """
@@ -97,14 +104,22 @@ class DocumentParser:
                                         line_buffer += c
                                     if c == '.':
                                         potential_end = c
-                                elif isinstance(char, LTAnno) and char.get_text() == ' ':
-                                    line_buffer += ' '
+
+                                elif isinstance(char, LTAnno):
+                                    # TODO: should check for cut words when a new line is inserted
+                                    if len(mapped_type) == 0:
+                                        if char.get_text() == ' ' or char.get_text() == '\n':
+                                            line_buffer += ' '
+                                    else:
+                                        if char.get_text() == ' ':
+                                            mapped_accumulators[mapped_type] += ' '
                             if verbose:
                                 print('Page {page}: {line} --> {styles}'.format(page=page.pageid,
                                                                                 line=line.get_text(),
                                                                                 styles=styles))
                     if len(line_buffer) > 0:
-                        sentences.append(Sentence(style=styles, content=line_buffer))
+                        sentences.append(Sentence(style=styles, content=line_buffer
+                                                  .translate(self.SUPPORTED_LIGATURES)))
                     title = None
                     if 'title' in mapped_accumulators.keys():
                         title = mapped_accumulators['title']
