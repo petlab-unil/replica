@@ -23,11 +23,27 @@ class DocumentParser:
     from enum import Enum
 
     class ParserState(Enum):
+        """
+        This class serves the only purpose of storing an enumeration of the states from the parser.
+
+        Attributes
+        ----------
+
+        NULL: int
+            a null state, when there is nothing treated.
+        LINE: int
+            the parser is parsing a regular sentence.
+        MAP_MATCH: int
+            an element of the map has matched.
+        LINE_END: int
+            the parser has reached a potential end of the sentence.
+        """
         NULL = 0
         LINE = 1
         MAP_MATCH = 2
         LINE_END = 3
 
+    # We need to translate some ligatures in unicode otherwise the text has special hexadecimal codes for them.
     SUPPORTED_LIGATURES = {
         0xfb00: u'ff',
         0xfb01: u'fi',
@@ -36,10 +52,11 @@ class DocumentParser:
         0xfb04: u'ffl',
     }
 
+    # This is what defines the end of the sentence, additionally, we test that the next character is uppercase
     LINE_END_TOKEN = '. '
-    POTENTIAL_END_TOKEN = '.'
+    POTENTIAL_END_TOKEN = '.' # detecting this will make the parser go into ParserState.LINE_END
 
-    current_state = ParserState.NULL
+    current_state = ParserState.NULL  # current state of the parser
 
     def __init__(self, document, map):
         """
