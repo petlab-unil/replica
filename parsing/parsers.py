@@ -1,3 +1,6 @@
+from pdfminer.layout import LAParams, LTAnno
+
+
 class DocumentParser:
     """
     This class represents a PDF document parser. It will go through the given document and try to detect sentences,
@@ -25,6 +28,13 @@ class DocumentParser:
         """
         self.document = document
         self.map = map
+
+    def __compute_mean_variance(self, values):
+        from numpy import mean, std
+        distances = []
+        for i in range(1, len(values)):
+            distances.append(values[i] - values[i-1])
+        return mean(distances), std(distances)
 
     def parse(self, verbose=False):
         """
@@ -87,6 +97,8 @@ class DocumentParser:
                                         line_buffer += c
                                     if c == '.':
                                         potential_end = c
+                                elif isinstance(char, LTAnno) and char.get_text() == ' ':
+                                    line_buffer += ' '
                             if verbose:
                                 print('Page {page}: {line} --> {styles}'.format(page=page.pageid,
                                                                                 line=line.get_text(),
