@@ -1,4 +1,4 @@
-from pdfminer.layout import LAParams, LTAnno
+from pdfminer.layout import LTAnno
 
 
 class DocumentParser:
@@ -20,6 +20,14 @@ class DocumentParser:
     parse(verbose=False)
         Parses the document and returns a Document class containing the sections, sentences and titles.
     """
+    from enum import Enum
+
+    class ParserState(Enum):
+        NULL = 0
+        LINE = 1
+        MAP_MATCH = 2
+        LINE_END = 3
+
     SUPPORTED_LIGATURES = {
         0xfb00: u'ff',
         0xfb01: u'fi',
@@ -28,6 +36,11 @@ class DocumentParser:
         0xfb04: u'ffl',
     }
 
+    LINE_END_TOKEN = '. '
+    POTENTIAL_END_TOKEN = '.'
+
+    current_state = ParserState.NULL
+
     def __init__(self, document, map):
         """
         :param document: the path to the PDF document to parse.
@@ -35,13 +48,7 @@ class DocumentParser:
         """
         self.document = document
         self.map = map
-
-    def __compute_mean_variance(self, values):
-        from numpy import mean, std
-        distances = []
-        for i in range(1, len(values)):
-            distances.append(values[i] - values[i-1])
-        return mean(distances), std(distances)
+        self.current_state = self.ParserState.NULL
 
     def parse(self, verbose=False):
         """
@@ -68,51 +75,51 @@ class DocumentParser:
                     sentences = []
                     mapped_type = ''  # might also become a map together with mapped_buffer
                     mapped_accumulators = {}
-                    potential_end = None
                     for line in container:
                         if isinstance(line, LTTextLine):
                             styles = {}
                             for char in line:
                                 if isinstance(char, LTChar):
-                                    c = char.get_text()
-                                    if potential_end is not None:
-                                        if potential_end == '.' and c == ' ':
-                                            potential_end += c
-                                        elif potential_end == '. ' and c.isupper():
+                                    token = char.get_text()
+                                    if self.current_state is self.ParserState.LINE_END:
+                                        if len(line_buffer) >= 2 and line_buffer[-2:] == self.LINE_END_TOKEN \
+                                                and token.isupper():
                                             sentences.append(Sentence(style=styles, content=line_buffer))
                                             line_buffer = ''
-                                            potential_end = None
-                                        else:
-                                            potential_end = None
+                                            self.current_state = self.ParserState.LINE
                                     if char.fontname not in styles.keys():
                                         styles[char.fontname] = 1
                                     else:
                                         styles[char.fontname] += 1
                                     matched_mapping = False
-                                    for mapped_elt in self.map: # FIXME: I need to refactor this
+                                    for mapped_elt in self.map:
                                         if char.fontname == mapped_elt['style'] or \
-                                           (c == ' ' and len(mapped_type) > 0):  # and char.size == mapped_elt['size']
-                                            mapped_buffer += c
+                                           (token == ' ' and self.current_state == self.ParserState.MAP_MATCH):
+                                            mapped_buffer += token
                                             mapped_type = mapped_elt['type']
-                                            matched_mapping = True
                                             if mapped_elt['type'] not in mapped_accumulators.keys():
                                                 mapped_accumulators[mapped_elt['type']] = ''
-                                            mapped_accumulators[mapped_elt['type']] += c
-                                        else:
-                                            mapped_type = ''
+                                            mapped_accumulators[mapped_elt['type']] += token
+                                            self.current_state = self.ParserState.MAP_MATCH
+                                            matched_mapping = True
                                     if not matched_mapping:
-                                        line_buffer += c
-                                    if c == '.':
-                                        potential_end = c
+                                        self.current_state = self.ParserState.LINE
+                                    if self.current_state == self.ParserState.LINE:
+                                        line_buffer += token
+                                        mapped_type = ''
+                                    if token == self.POTENTIAL_END_TOKEN:
+                                        self.current_state = self.ParserState.LINE_END
 
                                 elif isinstance(char, LTAnno):
-                                    # TODO: should check for cut words when a new line is inserted
-                                    if len(mapped_type) == 0:
+                                    if self.current_state != self.ParserState.MAP_MATCH:
                                         if char.get_text() == ' ' or char.get_text() == '\n':
                                             line_buffer += ' '
                                     else:
                                         if char.get_text() == ' ':
                                             mapped_accumulators[mapped_type] += ' '
+                                        elif char.get_text() == '\n':
+                                            if len(line_buffer) > 1 and line_buffer[-1:] == '-':
+                                                line_buffer = line_buffer.rstrip(line_buffer[-1])
                             if verbose:
                                 print('Page {page}: {line} --> {styles}'.format(page=page.pageid,
                                                                                 line=line.get_text(),
@@ -125,6 +132,5 @@ class DocumentParser:
                         title = mapped_accumulators['title']
                     document.add_content(Section(title=Title(style=mapped_type, content=title),
                                                  sentences=sentences))
-                    mapped_type = ''
 
         return document
