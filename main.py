@@ -56,9 +56,9 @@ def save_parsing_results(outputs, output_filepath='output/'):
             with open('/'.join([output_filepath, output.name + '.json']), 'w+') as file:
                 dump(output.to_dict(), file)
     else:
-        with open(output_filepath, 'w+') as file:
+        with open(output_filepath, 'w+', encoding='utf8') as file:
             for output in outputs:
-                dump(output.to_dict(), file)
+                dump(output.to_dict(), file, ensure_ascii=False)
 
 
 if __name__ == '__main__':
