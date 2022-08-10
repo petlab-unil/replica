@@ -129,16 +129,20 @@ class DocumentParser:
                                     if token == self.POTENTIAL_END_TOKEN:
                                         self.current_state = self.ParserState.LINE_END
 
-                                elif isinstance(char, LTAnno):
-                                    if self.current_state != self.ParserState.MAP_MATCH:
-                                        if char.get_text() == ' ' or char.get_text() == '\n':
+                                if self.current_state != self.ParserState.MAP_MATCH:
+                                    if char.get_text() == ' ':
+                                        line_buffer += ' '
+                                    elif char.get_text() == '\n':
+                                        if len(line_buffer) > 1 and line_buffer[-1:] == '-':
+                                            line_buffer = line_buffer.rstrip(line_buffer[-1])
+                                        else:
                                             line_buffer += ' '
-                                    else:
-                                        if char.get_text() == ' ':
-                                            mapped_accumulators[mapped_type] += ' '
-                                        elif char.get_text() == '\n':
-                                            if len(line_buffer) > 1 and line_buffer[-1:] == '-':
-                                                line_buffer = line_buffer.rstrip(line_buffer[-1])
+                                else:
+                                    if char.get_text() == ' ':
+                                        mapped_accumulators[mapped_type] += ' '
+                                    elif char.get_text() == '\n':
+                                        if len(line_buffer) > 1 and line_buffer[-1:] == '-':
+                                            line_buffer = line_buffer.rstrip(line_buffer[-1])
                             if verbose:
                                 print('Page {page}: {line} --> {styles}'.format(page=page.pageid,
                                                                                 line=line.get_text(),
