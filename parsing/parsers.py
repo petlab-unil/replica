@@ -104,6 +104,8 @@ class DocumentParser:
                                             sentences.append(Sentence(style=styles, content=line_buffer))
                                             line_buffer = ''
                                             self.current_state = self.ParserState.LINE
+                                        elif line_buffer[-1:] == self.POTENTIAL_END_TOKEN:
+                                            line_buffer += token
                                     if char.fontname not in styles.keys():
                                         styles[char.fontname] = 1
                                     else:
