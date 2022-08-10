@@ -104,8 +104,6 @@ class DocumentParser:
                                             sentences.append(Sentence(style=styles, content=line_buffer))
                                             line_buffer = ''
                                             self.current_state = self.ParserState.LINE
-                                        elif line_buffer[-1:] == self.POTENTIAL_END_TOKEN:
-                                            line_buffer += token
                                     if char.fontname not in styles.keys():
                                         styles[char.fontname] = 1
                                     else:
@@ -128,21 +126,21 @@ class DocumentParser:
                                         mapped_type = ''
                                     if token == self.POTENTIAL_END_TOKEN:
                                         self.current_state = self.ParserState.LINE_END
-
-                                if self.current_state != self.ParserState.MAP_MATCH:
-                                    if char.get_text() == ' ':
-                                        line_buffer += ' '
-                                    elif char.get_text() == '\n':
-                                        if len(line_buffer) > 1 and line_buffer[-1:] == '-':
-                                            line_buffer = line_buffer.rstrip(line_buffer[-1])
-                                        else:
+                                elif isinstance(char, LTAnno):
+                                    if self.current_state != self.ParserState.MAP_MATCH:
+                                        if char.get_text() == ' ' and line_buffer[-1:] != ' ':
                                             line_buffer += ' '
-                                else:
-                                    if char.get_text() == ' ':
-                                        mapped_accumulators[mapped_type] += ' '
-                                    elif char.get_text() == '\n':
-                                        if len(line_buffer) > 1 and line_buffer[-1:] == '-':
-                                            line_buffer = line_buffer.rstrip(line_buffer[-1])
+                                        elif char.get_text() == '\n':
+                                            if len(line_buffer) > 1 and line_buffer[-1:] == '-':
+                                                line_buffer = line_buffer.rstrip(line_buffer[-1])
+                                            else:
+                                                line_buffer += ' '
+                                    else:
+                                        if char.get_text() == ' ':
+                                            mapped_accumulators[mapped_type] += ' '
+                                        elif char.get_text() == '\n':
+                                            if len(line_buffer) > 1 and line_buffer[-1:] == '-':
+                                                line_buffer = line_buffer.rstrip(line_buffer[-1])
                             if verbose:
                                 print('Page {page}: {line} --> {styles}'.format(page=page.pageid,
                                                                                 line=line.get_text(),
