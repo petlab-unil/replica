@@ -10,5 +10,9 @@
   {
     "style": "QUCRDS+NimbusSanL-Bold",
     "type": "title"
+  },
+  {
+    "style": "GVMUBR+NimbusSanL-Bold",
+    "type": "title"
   }
 ]
