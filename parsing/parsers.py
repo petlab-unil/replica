@@ -45,11 +45,11 @@ class DocumentParser:
 
     # We need to translate some ligatures in unicode otherwise the text has special hexadecimal codes for them.
     SUPPORTED_LIGATURES = {
-        0xfb00: u'ff',
-        0xfb01: u'fi',
-        0xfb02: u'fl',
-        0xfb03: u'ffi',
-        0xfb04: u'ffl',
+        0xfb00: 'ff',
+        0xfb01: 'fi',
+        0xfb02: 'fl',
+        0xfb03: 'ffi',
+        0xfb04: 'ffl',
     }
 
     # This is what defines the end of the sentence, additionally, we test that the next character is uppercase
@@ -86,6 +86,9 @@ class DocumentParser:
                             for char in line:
                                 if isinstance(char, LTChar):
                                     token = char.get_text().replace('\xa0', '').replace('\xad', '')
+                                    if token in self.SUPPORTED_LIGATURES.keys():
+                                        token = token.translate(self.SUPPORTED_LIGATURES)
+                                        char_counter += 1
                                     if current_style is None:
                                         current_style = {}
                                     if 'name' not in current_style.keys():
@@ -102,7 +105,10 @@ class DocumentParser:
                                         line_buffer += token
                                         char_counter += 1
                                 elif isinstance(char, LTAnno):
-                                    token = char.get_text().replace('\xa0', '')
+                                    token = char.get_text().replace('\xa0', '').replace('\xad', '')
+                                    if token in self.SUPPORTED_LIGATURES.keys():
+                                        token = token.translate(self.SUPPORTED_LIGATURES)
+                                        char_counter += 1
                                     if token == ' ' and line_buffer[-1:] != ' ':
                                         line_buffer += ' '
                                         char_counter += 1
@@ -112,7 +118,12 @@ class DocumentParser:
                                         elif line_buffer[-1:] != ' ':
                                             line_buffer += ' '
                                             char_counter += 1
+                    current_style['end'] = char_counter
+                    if verbose:
+                        print(line_buffer[current_style['start']:current_style['end']],
+                              current_style)
                     styles_stack.append(current_style)
+                    current_style = None
         return line_buffer, styles_stack
 
     def parse(self, verbose=False):
@@ -167,7 +178,7 @@ class DocumentParser:
                                                  previous_element=None))
                 cur_start = split_end - 1
             if cur_start < len(line):
-                print(line[cur_start:len(line)-1], style, current_title)
+                if verbose:
+                    print(line[cur_start:len(line)-1], style, current_title)
                 line_buffer += line[cur_start:len(line)-1]
-
         return document
