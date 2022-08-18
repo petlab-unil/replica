@@ -67,7 +67,7 @@ class DocumentParser:
         self.map = map
         self.current_state = self.ParserState.NULL
 
-    def __pdf_to_text(self, verbose=False):
+    def pdf_to_text(self, verbose=False):
         from os.path import basename
         from pdfminer.high_level import extract_pages
         from pdfminer.layout import LTTextBoxHorizontal, LTTextLine, LTChar
@@ -138,7 +138,7 @@ class DocumentParser:
         from re import search, finditer
 
         document = Document(basename(self.document))
-        text, styles = self.__pdf_to_text(verbose=verbose)
+        text, styles = self.pdf_to_text(verbose=verbose)
 
         line_buffer = ''
         sentences_buffer = []
