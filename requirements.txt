@@ -1,5 +1,7 @@
 cffi==1.15.0
 charset-normalizer==2.1.0
 cryptography==37.0.2
+numpy==1.23.1
 pdfminer.six==20220524
+progress==1.6
 pycparser==2.21
