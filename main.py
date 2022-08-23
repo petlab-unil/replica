@@ -11,6 +11,10 @@ def init_arguments():
                         type=str, action='store')
     parser.add_argument('-m', '--map', help='The style map file to use to recognise the content',
                         type=str, action='store')
+    parser.add_argument('-s', '--silent', help='Run the tool in silent mode, no input required',
+                        default=False, action='store_true')
+    parser.add_argument('-nc', '--no-check', help='Prevents end check process from running',
+                        dest='check', default=True, action='store_false')
     args = parser.parse_args()
     return args
 
@@ -68,7 +72,6 @@ def save_parsing_results(outputs, output_filepath='output/'):
 
 
 def __check_results(documents, parsers):
-
     file_issues = []
     parser_issues = []
     for document, parser in zip(documents, parsers):
@@ -100,23 +103,32 @@ def __correct_map(parsers, mapfile, reference_word='ABSTRACT', type='title'):
 def start_correction_process(input_filepath, mapfile, documents, parsers):
     from progress.bar import ChargingBar
     file_errors, parser_errors = __check_results(documents, parsers)
-
+    print('Found {issues} issues in the current parsing batch'.format(issues=len(file_errors)))
     new_files = []
     for f in file_errors:
         new_files.append(input_filepath + f.name)
 
-    tentative_map = __correct_map(parser_errors, mapfile)
+    correct = input('Do you want to correct them? [Y/n] ')
+    correct = len(correct) == 0 or correct.lower() == 'y' or correct.lower() == 'yes'
+    if not correct:
+        return documents, parsers, mapfile, correct
+    parsing_word = input('Specify a reference word: [ABSTRACT]')
+    #style_type = input('What is the type of data you are looking for? [title]')
+    if len(parsing_word) > 0:
+        tentative_map = __correct_map(parser_errors, mapfile, reference_word=parsing_word)
+    else:
+        tentative_map = __correct_map(parser_errors, mapfile)
     new_mapfile = mapfile + '.extended'
     with open(new_mapfile, 'w+') as emap:
         dump(tentative_map, emap)
 
     new_documents = []
-    with ChargingBar('Parsing 2nd round', max=len(documents), suffix='%(index)d/%(max)d %(percent)d%%') as progress_bar:
+    with ChargingBar('Reparsing', max=len(documents), suffix='%(index)d/%(max)d %(percent)d%%') as progress_bar:
         for parser in parsers:
             new_documents.append(parser.parse(use_cache=True, map=tentative_map))
             progress_bar.next()
 
-    return new_documents, parsers
+    return new_documents, parsers, new_mapfile, correct
 
 
 if __name__ == '__main__':
@@ -129,8 +141,11 @@ if __name__ == '__main__':
         print('Bro, seriously... This code needs an input to run...')
         exit(1)
     documents, parsers = start_parsing(args.input, args.map, args.verbose)
-    print('Checking for parsing issues...')
-    documents, parsers = start_correction_process(args.input, args.map, documents, parsers)
+    map = args.map
+    correct = args.check
+    while correct:
+        print('Checking for parsing issues...')
+        documents, parsers, map, correct = start_correction_process(args.input, map, documents, parsers)
     print('Saving documents')
     if args.output is not None:
         save_parsing_results(documents, args.output)
