@@ -58,6 +58,9 @@ class DocumentParser:
 
     current_state = ParserState.NULL  # current state of the parser
 
+    cached_styles = []
+    cached_line = ''
+
     def __init__(self, document, map):
         """
         :param document: the path to the PDF document to parse.
@@ -126,7 +129,7 @@ class DocumentParser:
                     current_style = None
         return line_buffer, styles_stack
 
-    def parse(self, verbose=False):
+    def parse(self, map=None, use_cache=False, verbose=False):
         """
         Parses the document and returns a Document class containing the sections, sentences and titles.
 
@@ -137,8 +140,18 @@ class DocumentParser:
         from os.path import basename
         from re import search, finditer
 
+        if map is None:
+            map = self.map
+
         document = Document(basename(self.document))
-        text, styles = self.pdf_to_text(verbose=verbose)
+        if not use_cache:
+            text, styles = self.pdf_to_text(verbose=verbose)
+
+            self.cached_styles = styles
+            self.cached_line = text
+        else:
+            text = self.cached_line
+            styles = self.cached_styles
 
         line_buffer = ''
         sentences_buffer = []
@@ -147,7 +160,7 @@ class DocumentParser:
 
         for style in styles:
             matched_mapping = False
-            for mapped_style in self.map:
+            for mapped_style in map:
                 if style['name'] == mapped_style['style'] and mapped_style['type'] == 'title':
                     if current_title is not None:
                         sentences_buffer.append(Sentence(content=line_buffer, style=None, previous_element=None))
@@ -182,3 +195,6 @@ class DocumentParser:
                     print(line[cur_start:len(line)-1], style, current_title)
                 line_buffer += line[cur_start:len(line)-1]
         return document
+
+    def get_cached(self):
+        return self.cached_line, self.cached_styles

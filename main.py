@@ -37,13 +37,16 @@ def start_parsing(filepath, mapfile, verbose=False):
         with open(mapfile, 'r') as f:
             map = load(f)
 
+    documents = []
     parsers = []
     with ChargingBar('Parsing', max=len(files), suffix='%(index)d/%(max)d %(percent)d%%') as progress_bar:
         for file in files:
-            parsers.append(DocumentParser(file, map).parse(verbose))
+            parser = DocumentParser(file, map)
+            documents.append(parser.parse(verbose=verbose))
+            parsers.append(parser)
             progress_bar.next()
 
-    return parsers
+    return documents, parsers
 
 
 def save_parsing_results(outputs, output_filepath='output/'):
@@ -64,45 +67,56 @@ def save_parsing_results(outputs, output_filepath='output/'):
                 dump(output.to_dict(), file, ensure_ascii=False)
 
 
-def check_results(output_folder, file=None):
-    from os import listdir
-
-    def check_file_content(filepath):
-        from json import load
-        data = None
-        with open(filepath, 'r') as res:
-            data = load(res)
-        return data is None or len(data['content']) == 0
+def __check_results(documents, parsers):
 
     file_issues = []
-    if file is not None and not check_file_content(output_folder + file):
-        print('Detected parsing issue with file: {filepath}'.format(filepath=output_folder + file))
-        file_issues.append(file)
-    else:
-        for f in listdir(output_folder):
-            if check_file_content(output_folder + f):
-                file_issues.append(f)
-                print('Detected parsing issue with file: {filepath}'.format(filepath=output_folder + f))
+    parser_issues = []
+    for document, parser in zip(documents, parsers):
+        if len(document.get_content()) == 0:
+            file_issues.append(document)
+            parser_issues.append(parser)
+            print('Detected parsing issue with file: {filepath}'.format(filepath=document.name))
 
-    return file_issues
+    return file_issues, parser_issues
 
 
-def correct_map(filepath, mapfile, reference_word='ABSTRACT', type='title'):
-    from parsing.parsers import DocumentParser
+def __correct_map(parsers, mapfile, reference_word='ABSTRACT', type='title'):
     from re import match
     from json import load
 
     with open(mapfile, 'r') as f:
         map = load(f)
 
-    for f in filepath:
-        line, styles = DocumentParser(f, map).pdf_to_text()
+    for parser in parsers:
+        line, styles = parser.get_cached()
         for style in styles:
             sub = line[style['start']:style['end']]
             if match(reference_word, sub) is not None:
-                map.append({'type': type, 'style': style['name']})
+                map.append({'style': style['name'], 'type': type})
 
     return map
+
+
+def start_correction_process(input_filepath, mapfile, documents, parsers):
+    from progress.bar import ChargingBar
+    file_errors, parser_errors = __check_results(documents, parsers)
+
+    new_files = []
+    for f in file_errors:
+        new_files.append(input_filepath + f.name)
+
+    tentative_map = __correct_map(parser_errors, mapfile)
+    new_mapfile = mapfile + '.extended'
+    with open(new_mapfile, 'w+') as emap:
+        dump(tentative_map, emap)
+
+    new_documents = []
+    with ChargingBar('Parsing 2nd round', max=len(documents), suffix='%(index)d/%(max)d %(percent)d%%') as progress_bar:
+        for parser in parsers:
+            new_documents.append(parser.parse(use_cache=True, map=tentative_map))
+            progress_bar.next()
+
+    return new_documents, parsers
 
 
 if __name__ == '__main__':
@@ -114,18 +128,11 @@ if __name__ == '__main__':
     if args.input is None:
         print('Bro, seriously... This code needs an input to run...')
         exit(1)
-    outputs = start_parsing(args.input, args.map, args.verbose)
+    documents, parsers = start_parsing(args.input, args.map, args.verbose)
+    print('Checking for parsing issues...')
+    documents, parsers = start_correction_process(args.input, args.map, documents, parsers)
+    print('Saving documents')
     if args.output is not None:
-        save_parsing_results(outputs, args.output)
-        file_errors = check_results(args.output)
-        new_files = []
-        for f in file_errors:
-            new_files.append(args.input + f.replace('.json', ''))
+        save_parsing_results(documents, args.output)
 
-        tentative_map = correct_map(new_files, args.map)
-        with open(args.map + '.extended', 'w+') as emap:
-            dump(tentative_map, emap)
 
-        for f in new_files:
-            out = start_parsing(f, args.map + '.extended')
-            save_parsing_results(out, args.output)
