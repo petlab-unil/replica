@@ -93,7 +93,7 @@ def __correct_map(parsers, mapfile, reference_word='ABSTRACT', type='title'):
     for parser in parsers:
         line, styles = parser.get_cached()
         for style in styles:
-            sub = line[style['start']:style['end']]
+            sub = line[style['start']:style['end']].replace(' ', '')
             if match(reference_word, sub) is not None:
                 map.append({'style': style['name'], 'type': type})
 
@@ -104,6 +104,10 @@ def start_correction_process(input_filepath, mapfile, documents, parsers):
     from progress.bar import ChargingBar
     file_errors, parser_errors = __check_results(documents, parsers)
     print('Found {issues} issues in the current parsing batch'.format(issues=len(file_errors)))
+
+    if len(file_errors) == 0:
+        return documents, parsers, mapfile, False
+
     new_files = []
     for f in file_errors:
         new_files.append(input_filepath + f.name)
@@ -112,12 +116,10 @@ def start_correction_process(input_filepath, mapfile, documents, parsers):
     correct = len(correct) == 0 or correct.lower() == 'y' or correct.lower() == 'yes'
     if not correct:
         return documents, parsers, mapfile, correct
-    parsing_word = input('Specify a reference word: [ABSTRACT]')
+    parsing_word = 'INTRODUCTION'
+    parsing_word = input('Specify a reference word: [{ref_word}]'.format(ref_word=parsing_word))
     #style_type = input('What is the type of data you are looking for? [title]')
-    if len(parsing_word) > 0:
-        tentative_map = __correct_map(parser_errors, mapfile, reference_word=parsing_word)
-    else:
-        tentative_map = __correct_map(parser_errors, mapfile)
+    tentative_map = __correct_map(parser_errors, mapfile, reference_word=parsing_word)
     new_mapfile = mapfile + '.extended'
     with open(new_mapfile, 'w+') as emap:
         dump(tentative_map, emap)

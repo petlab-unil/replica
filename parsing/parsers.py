@@ -175,7 +175,9 @@ class DocumentParser:
             if matched_mapping:
                 continue
 
-            if text[style['start'] - 1] != ' ':
+            if style['start'] == 0:
+                line = text[style['start']:style['end']]
+            elif style['start'] > 0 and text[style['start'] - 1] != ' ':
                 line = text[style['start'] - 1:style['end']]
             else:
                 line = text[style['start']:style['end']]
