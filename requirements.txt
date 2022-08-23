@@ -5,3 +5,4 @@ numpy==1.23.1
 pdfminer.six==20220524
 progress==1.6
 pycparser==2.21
+bert-score==0.3.11
