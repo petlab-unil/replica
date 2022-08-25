@@ -178,9 +178,9 @@ class DocumentParser:
             if style['start'] == 0:
                 line = text[style['start']:style['end']]
             elif style['start'] > 0 and text[style['start'] - 1] != ' ':
-                line = text[style['start'] - 1:style['end']]
+                line = text[style['start'] - 1:style['end']+1]
             else:
-                line = text[style['start']:style['end']]
+                line = text[style['start']:style['end']+1]
             matches = finditer(self.LINE_END_TOKEN, line)
             cur_start = 0
             for match in matches:
@@ -189,7 +189,7 @@ class DocumentParser:
                 if len(line_buffer) > 0:
                     sentence_content = line_buffer
                     line_buffer = ''
-                sentences_buffer.append(Sentence(content=sentence_content + line[cur_start:split_start], style=None,
+                sentences_buffer.append(Sentence(content=sentence_content + line[cur_start:split_start+1], style=None,
                                                  previous_element=None))
                 cur_start = split_end - 1
             if cur_start < len(line):
