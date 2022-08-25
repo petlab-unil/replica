@@ -148,8 +148,8 @@ if __name__ == '__main__':
     while correct:
         print('Checking for parsing issues...')
         documents, parsers, map, correct = start_correction_process(args.input, map, documents, parsers)
-    print('Saving documents')
     if args.output is not None:
+        print('Saving documents')
         save_parsing_results(documents, args.output)
 
 
