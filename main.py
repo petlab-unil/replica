@@ -116,8 +116,11 @@ def start_correction_process(input_filepath, mapfile, documents, parsers):
     correct = len(correct) == 0 or correct.lower() == 'y' or correct.lower() == 'yes'
     if not correct:
         return documents, parsers, mapfile, correct
-    parsing_word = 'INTRODUCTION'
-    parsing_word = input('Specify a reference word: [{ref_word}]'.format(ref_word=parsing_word))
+
+    reference_word = 'INTRODUCTION'
+    parsing_word = input('Specify a reference word: [{ref_word}]'.format(ref_word=reference_word))
+    if len(parsing_word) == 0:
+        parsing_word = reference_word
     #style_type = input('What is the type of data you are looking for? [title]')
     tentative_map = __correct_map(parser_errors, mapfile, reference_word=parsing_word)
     new_mapfile = mapfile + '.extended'
