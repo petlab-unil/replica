@@ -1,5 +1,6 @@
 from json import load
 from bert_score import BERTScorer
+from transformers import pipeline
 import numpy as np
 
 
@@ -31,14 +32,35 @@ def json_to_sent(json_file):
             for sentence in sent_tokenize(sent['content']):
                 if len(sentence.split(' ')) > 2: 
                     sentences.append(sentence)
+
+    if len(sentences)==0:
+        print ("Empty sentence, checking title nodes:", sentences)
+        for para in data['content']:
+            for sentence in sent_tokenize(para['title']['content']):
+                if len(sentence.split(' ')) > 2: 
+                    sentences.append(sentence)
+
     return sentences
 
-def calculate_sim_scores(filepath):
+def classify_criteria(classifier, sentences, criteria):
+    results = classifier(sentences, criteria, multi_label=True)
+    return results
+     
+def calculate_sim_scores(scorer, sentences, groundtruth, threshold, criteria):
+    p, r, f = scorer.score(sentences, [groundtruth]*len(sentences))
+    # mask = f > 0.75
+    mask = f > threshold
+    indices = mask.nonzero().flatten().numpy()
+    results = {'criteria': [criteria]*len(indices), 'sentences': list(np.array(sentences)[indices]), 'sim_scores': f[indices]}
+    return results
+
+
+def check_criteria(filepath, use_bert_score = True, use_zero_shot_classifier = True):
     """
     Calculates similarity scores between the groundtruth sentences and all the sentences of the PDF for each criteria. 
     Threshold for similarity score is empirically set at different levels for each criteria.
     Writes output to a .csv file with columns criteria, sentence, score, paper title
-    :param: `json_file` (str): path to the folder containing the outputs of the PDF parser or a json output file
+    :param: `filepath` (str): path to the folder containing the outputs of the PDF parser or a json output file
     """
     import pandas as pd
     from os.path import isdir, basename, join
@@ -55,41 +77,50 @@ def calculate_sim_scores(filepath):
         exit(1)
 
     print (len(files))
-    exclusion = "Museum Internet Grindr tactoRing Experimental Super Bazaar Negotiations understandability Polite Tech Help Desk Automatically Generating OtherTube common Novice Video Consumption Privacy manipulated Commerce Everyday Modeling Brush Village See What Complementary".split(" ")
-    for ex in exclusion:
-        for json_file in files:
-            if (ex in basename(json_file)):
-                print ("*****************Skipping article {}\n".format(basename(json_file)), ex)
-                test_files.append(json_file)
+    # exclusion = "Museum Internet Grindr tactoRing Experimental Super Bazaar Negotiations understandability Polite Tech Automatically OtherTube common Novice Video Privacy manipulated Commerce Everyday Curved Brush Village What Complementary".split(" ")
+    # for ex in exclusion:
+    #     for json_file in files:
+    #         if (ex in basename(json_file)):
+    #             print ("*****************Skipping article {}\n".format(basename(json_file)), ex)
+    #             test_files.append(json_file)
 
-    print (len(test_files))
+    # print (len(test_files))
     groundtruth = read_json("criteria_goundtruth.json") 
-    scorer = BERTScorer(model_type="distilbert-base-uncased")
+    if use_bert_score: scorer = BERTScorer(model_type="distilbert-base-uncased")
+    if use_zero_shot_classifier: classifier = pipeline("zero-shot-classification", device=0)
     threshold = read_json("threshold_scores.json")
     
     scores = []
     predictions = []
     
-    for json_file in test_files:
+    for json_file in files:
+        print('####\nProcessing article {}\n'.format(basename(json_file))) 
         sentences = json_to_sent(json_file)
-        print('####\nProcessing article {}\n'.format(basename(json_file)))
 
         paper_prediction = {}
-        for key in groundtruth:
-            print('----\nChecking criteria {}\n----'.format(key))
-            p, r, f = scorer.score(sentences, [groundtruth[key]]*len(sentences))
-            mask = f > threshold[key]
-            indices = mask.nonzero().flatten().numpy()
-            df_scores = pd.DataFrame({'criteria': [key]*len(indices), 'sentences': np.array(sentences)[indices], 'scores': f[indices], 'groundtruth': [groundtruth[key]]*len(indices), 'paper_title': [basename(json_file)]*len(indices)})
-            paper_prediction[key] = [int(any(indices))]
-            scores.append(df_scores)
+        # for key in groundtruth["zero_shot"][0]:
+        for key in ["Pre-registration", "Sample size for QuaN", "Anonymization"]:
+            print('Checking criteria {}\n----'.format(key))
+
+            if use_bert_score:
+                sim_results = calculate_sim_scores(scorer, sentences, groundtruth["sim_matcher"][0][key], threshold["zero_shot"][0][key], key)
+            if len(sim_results['sentences'])>0:
+                if use_zero_shot_classifier:
+                    results = classify_criteria(classifier, sim_results['sentences'], groundtruth['zero_shot'][0][key])
+                df_scores = pd.concat([pd.DataFrame(sim_results), pd.DataFrame(results)], axis=1)
+                df_scores['paper_title'] = [basename(json_file)]*len(df_scores)
+                df_scores['max_label_score'] = df_scores['scores'].apply(lambda x:x[0])
+                paper_prediction[key] = [int(any(df_scores['max_label_score'] > 0.80))]
+                scores.append(df_scores)
         paper_prediction['paper_title'] = [basename(json_file)]
         predictions.append(pd.DataFrame(paper_prediction))
     final = pd.concat(scores)
     pred = pd.concat(predictions)
-    pred.to_csv("predictions.csv")
-    final.to_csv("final_test.csv")
+    pred.fillna(0, inplace=True)
+    pred.to_csv("final_predictions_zero_shot5.csv")
+    final.to_csv("final_sentences_zero_shot5.csv")
 
 
 if __name__ == '__main__':
-    calculate_sim_scores("output/")
+    check_criteria("parserOutput-all")
+    # check_criteria("output")

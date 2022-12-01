@@ -1,4 +1,4 @@
-{"IRB": 0.817,
+{"sim_matcher": [{"IRB": 0.817,
 "Incentives": 0.81,
 "No Incentives": 0.85,
 "DemograpphicsAll": 0.81,
@@ -17,4 +17,22 @@
 "IV" : 	0.85,
 "DV" : 	0.85,
 "Questionnaire/Survey" : 0.83,
-"Effect Size" : 0.83}
+"Effect Size" : 0.83}],
+
+"zero_shot": [{"IRB": 0.75,
+"Incentives": 0.75,
+"No Incentives": 0.75,
+"DemograpphicsAll": 0.75,
+"DemographicsNum": 0.75, 
+"DemographicsTable": 0.75, 
+"DemographicsGender": 0.75,
+"DemographicsAge": 0.75,
+"Consent Form": 0.75,
+"Pre-registration": 0.78,
+"Sample size for QuaN": 0.78,
+"Data Exclusion" : 0.76,
+"Preprocessing and data blinding" : 0.80,
+"Hypothesis": 0.80,
+"Anonymization": 0.78,
+"Grouping" : 0.83}]
+}
