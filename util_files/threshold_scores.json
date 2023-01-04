@@ -1,0 +1,18 @@
+{
+    "zero_shot": [{"IRB": 0.75,
+    "Incentives": 0.74,
+    "No Incentives": 0.78,
+    "DemograpphicsAll": 0.75,
+    "DemographicsNum": 0.75, 
+    "DemographicsTable": 0.75, 
+    "DemographicsGender": 0.75,
+    "DemographicsAge": 0.75,
+    "Consent Form": 0.79,
+    "Pre-registration": 0.8,
+    "Sample size for QuaN": 0.8,
+    "Data Exclusion" : 0.76,
+    "Preprocessing and data blinding" : 0.80,
+    "Hypothesis": 0.80,
+    "Anonymization": 0.77,
+    "Grouping" : 0.83}]
+}

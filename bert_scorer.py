@@ -1,13 +1,27 @@
 from json import load
 from os.path import isdir, basename, join
-from os import listdir
+from os import listdir, makedirs
 
 import numpy as np
 import pandas as pd
 from bert_score import BERTScorer
 from transformers import pipeline
 
+import argparse
 
+
+def init_arguments():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', '--filepath', help='The path containing the output of the PDF parser',
+                                                type=str, action='store')
+    parser.add_argument('-o', '--output', help='The output path to store the predictions, stores in output/ by default',
+                        type=str, default='output', action='store')
+    parser.add_argument('-s', '--similarity', help='Enables BERTScore similarity matching to filter sentences',
+                         default=True, action='store_true')
+    parser.add_argument('-c', '--classifier', help='Enables zero-shot text classifier',
+                        default=True, action='store_true')
+    args = parser.parse_args()
+    return args
 
 def read_json(criteriafile):
     """
@@ -116,7 +130,7 @@ def check_criteria(filepath, use_sim_score = True, use_zero_shot_classifier = Tr
         exit(1)
     
     # read the reference sentences
-    groundtruth = read_json("criteria_goundtruth.json")  
+    groundtruth = read_json("util_files/criteria_goundtruth.json")  
 
     # list of sentences used to compute the idf weights, providing all reference sentences for all criteria to keep it simple
     all_gt = []
@@ -126,7 +140,7 @@ def check_criteria(filepath, use_sim_score = True, use_zero_shot_classifier = Tr
     if use_zero_shot_classifier: classifier = pipeline("zero-shot-classification", device=0)
     
     # read the threshold scores for similarity filter, different for each criteria
-    threshold = read_json("threshold_scores.json")
+    threshold = read_json("util_files/threshold_scores.json")
     
     scores = []
     predictions = []
@@ -162,9 +176,18 @@ def check_criteria(filepath, use_sim_score = True, use_zero_shot_classifier = Tr
     final = pd.concat(scores)
     pred = pd.concat(predictions)
     pred.fillna(0, inplace=True)
-    pred.to_csv("predictions.csv")
-    final.to_csv("sentences.csv")
+
+    if not isdir(args.output):
+        makedirs(args.output)
+
+    pred.to_csv(join(args.output, "predictions.csv"))
+    final.to_csv(join(args.output, "sentences.csv"))
 
 
 if __name__ == '__main__':
-    check_criteria("parserOutput-all")
+    args = init_arguments()
+    if args.filepath is None:
+        print('\nPath to the PDF parsed files must be specified.... \n\n')
+        exit(1)
+
+    check_criteria(filepath=args.filepath, use_sim_score=args.similarity, use_zero_shot_classifier=args.classifier)

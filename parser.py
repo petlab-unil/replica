@@ -138,9 +138,6 @@ def start_correction_process(input_filepath, mapfile, documents, parsers):
 
 if __name__ == '__main__':
     from json import dump
-    with open('opening_lahari.txt', 'r') as opening:
-        opening_content = opening.read()
-        print(opening_content)
     args = init_arguments()
     if args.input is None:
         print('Bro, seriously... This code needs an input to run...')
