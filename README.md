@@ -1,3 +1,20 @@
+<!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
+
+<!-- code_chunk_output -->
+
+- [REPLICA Automated Criteria Screening Tool](#replica-automated-criteria-screening-tool)
+  - [Installing REPLICA](#installing-replica)
+    - [Importing the dependencies](#importing-the-dependencies)
+  - [Architecture of the proof-of-concept screening tool](#architecture-of-the-proof-of-concept-screening-tool)
+  - [PDF Parsing](#pdf-parsing)
+    - [Creating the mappings](#creating-the-mappings)
+    - [Using the parser](#using-the-parser)
+    - [Understanding the parsing mechanism](#understanding-the-parsing-mechanism)
+  - [Criteria Screening](#criteria-screening)
+    - [Using the criteria screener](#using-the-criteria-screener)
+
+<!-- /code_chunk_output -->
+
 # REPLICA Automated Criteria Screening Tool
 
 This repository contains the code used for a proof-of-concept screening tool developed
@@ -120,22 +137,7 @@ This should ideally be the output folder from the parser.
 You can choose to use the similarity filter or the zero-shot text classifier or both while determining if the sentence satisfies the criterion. 
 Using both the options optimizes to give high F1 scores and hence is used in the REPLICA paper. 
 Thus, the command to obtain predictions for the parsed PDFs in ```output/```:
-<!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
 
-<!-- code_chunk_output -->
-
-- [REPLICA Automated Criteria Screening Tool](#replica-automated-criteria-screening-tool)
-  - [Installing REPLICA](#installing-replica)
-    - [Importing the dependencies](#importing-the-dependencies)
-  - [Architecture of the proof-of-concept screening tool](#architecture-of-the-proof-of-concept-screening-tool)
-  - [PDF Parsing](#pdf-parsing)
-    - [Creating the mappings](#creating-the-mappings)
-    - [Using the parser](#using-the-parser)
-    - [Understanding the parsing mechanism](#understanding-the-parsing-mechanism)
-  - [Criteria Screening](#criteria-screening)
-    - [Using the criteria screener](#using-the-criteria-screener)
-
-<!-- /code_chunk_output -->
 
 ```
 python criteria_screener.py -f output/
