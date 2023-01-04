@@ -170,6 +170,7 @@ def check_criteria(filepath, use_sim_score = True, use_zero_shot_classifier = Tr
                 # if any of the sentence crosses the threshold probability, prediction is marked as 1 for that paper title and criteria
                 paper_prediction[key] = [int(any(df_scores['max_label_score'] > threshold_prob))]
                 scores.append(df_scores)
+        # TODO handle the case if one of use_sim_score or use_zero_shot_classifier is False
         paper_prediction['paper_title'] = [basename(json_file)]
         predictions.append(pd.DataFrame(paper_prediction))
 

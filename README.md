@@ -1,8 +1,9 @@
-# REPLICA Automated Document Analysis Tool
+# REPLICA Automated Criteria Screening Tool
 
-This repository contains the tool used for automated document analysis developed
+This repository contains the code used for a proof-of-concept screening tool developed
 by the PET Lab at the University of Lausanne. This tool is used in the context
-of the REPLICA project.
+of the REPLICA project. This tool detects whether the text from a PDF of an article
+meets a criterion.
 
 ## Installing REPLICA
 Replica is developed using the Python language and is primarly designed for Python 3.9
@@ -26,6 +27,12 @@ $ pip install -r requirements.txt
 ```
 If everything went smoothly, you are all set to start using the tool.
 
+## Architecture of the proof-of-concept screening tool
+![the architecture diagram](documentation/figures/automation.eps)
+
+## PDF Parsing
+This step involves preprocessing the PDF files of the articles to extract the content from it.
+
 ### Creating the mappings
 Mappings are definitions of elements' types and their respective style. In the current
 version, this is only used to detect the title. In the future versions, the mappings will
@@ -43,11 +50,11 @@ We did a manual analysis of the font name used in order to determine the CHI '17
 and the CHI '22. However, the next version will have an exploration command that
 will make a summary of the styles detected.
 
-## Using REPLICA
-Using the tool is pretty simple. The tool offers the following options:
+### Using the parser
+The parser offers the following options:
 ```
-$ python main.py -h
-usage: main.py [-h] [-v] [-in INPUT] [-o OUTPUT] [-m MAP]
+$ python parser.py -h
+usage: parser.py [-h] [-v] [-in INPUT] [-o OUTPUT] [-m MAP]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -64,10 +71,10 @@ specify an output folder, the tool will output the parsed documents in it.
 Thus, you can use the following command to parse the CHI '17 documents and get
 an output:
 ```
-$ python main.py -in content/2017/ -m maps/map_2017.json -o output/
+$ python parser.py -in content/2017/ -m maps/map_2017.json -o output/
 ```
 
-## Understanding the parsing mechanism
+### Understanding the parsing mechanism
 The tool has a set of classes that define: a document, a section, a title, and a sentence.
 We provide a view of the architecture through the following figure,
 representing the class diagram of the parsing elements.
@@ -81,3 +88,43 @@ structure you get will always be the same.**
 We provide further details
 on the parsing of the documents through the following activity diagram.
 ![the activity diagram](documentation/figures/parsing_document_activity_diagram.jpg)
+
+## Criteria Screening
+This implements a proof-of-concept system that detects if each sentence satisfies a criterion. 
+After preprocessing the PDF into a set of individual sentences, each sentence is 
+independently analyzed in two steps: 
+First, we use [BERTScore](https://github.com/Tiiiger/bert_score) to calculate how similar the input sentence is with any reference sentences. 
+Second, for each sentence that is adequately similar, 
+we use NLI based zero-shot classification to determine the probability that the sentence could be *entailed* by each of the criterion’s keywords. 
+The input sentences that pass both tests are positive prediction. 
+Any paper with a positive sentence is classified as satisfying the criterion.
+
+### Using the criteria screener
+The screener offers the following options:
+```
+$ python criteria_screener.py -h
+usage: criteria_screener.py [-h] [-f FILEPATH] [-o OUTPUT] [-s] [-c]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -f FILEPATH, --filepath FILEPATH
+                        The path containing the output of the PDF parser
+  -o OUTPUT, --output OUTPUT
+                        The output path to store the predictions, stores in output/ by default
+  -s, --similarity      Enables BERTScore similarity matching to filter sentences
+  -c, --classifier      Enables zero-shot text classifier
+```
+
+The input filepath is a mandatory parameter. 
+This should ideally be the output folder from the parser. 
+You can choose to use the similarity filter or the zero-shot text classifier or both while determining if the sentence satisfies the criterion. 
+Using both the options optimizes to give high F1 scores and hence is used in the REPLICA paper. 
+Thus, the command to obtain predictions for the parsed PDFs in ```output/```
+<!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
+
+```
+python criteria_screener.py -f output\
+```
+
+The reference sentences for each criterion used for similarity filtering is present in [criteria_groundtruth.json](util_files/criteria_goundtruth.json).
+The threshold hyperparameter for each criterion used for similarity filtering is present in [threshold_scores.json](util_files/threshold_scores.json).
