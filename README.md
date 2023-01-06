@@ -1,4 +1,4 @@
-# REPLICA Automated Criteria Screening Tool
+# REPLICA Criteria Screening Tool
 
 <!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
 
@@ -52,10 +52,8 @@ If everything went smoothly, you are all set to start using the tool.
 This step involves preprocessing the PDF files of the articles to extract the content from it.
 
 ### Creating the mappings
-Mappings are definitions of elements' types and their respective style. In the current
-version, this is only used to detect the title. In the future versions, the mappings will
-let you detect other types of content that uses a specific font name. A mapping looks
-like the one below (CHI '17 style), and is stored in a JSON file:
+Mappings are definitions of elements' types and their respective style. 
+Below is an example of a mapping:
 ```
 [
   {
@@ -64,9 +62,7 @@ like the one below (CHI '17 style), and is stored in a JSON file:
   }
 ]
 ```
-We did a manual analysis of the font name used in order to determine the CHI '17 style
-and the CHI '22. However, the next version will have an exploration command that
-will make a summary of the styles detected.
+We currently use mappings from the style only to detect the title of the paper.
 
 ### Using the parser
 The parser offers the following options:
@@ -78,13 +74,13 @@ optional arguments:
   -h, --help            show this help message and exit
   -v, --verbose         Use this if you want the program to yell what it is doing
   -in INPUT, --input INPUT
-                        Input content to parse, if it is a folder all its contentwill be parsed
+                        Input content to parse, if it is a folder all its content will be parsed
   -o OUTPUT, --output OUTPUT
                         The output path to store the content eventually generated
   -m MAP, --map MAP     The style map file to use to recognise the content
 ```
 There are two mandatory parameters to provide in order to make the tool work. First you have
-to provide the input file or folder path. Second, the mapping file to use. If you 
+to provide a paper PDF file (or a path containing PDF files) as input. Second, the mapping file to use. If you 
 specify an output folder, the tool will output the parsed documents in it.  
 Thus, you can use the following command to parse the CHI '17 documents and get
 an output:
