@@ -130,7 +130,7 @@ def check_criteria(filepath, use_sim_score = True, use_zero_shot_classifier = Tr
         exit(1)
     
     # read the reference sentences
-    groundtruth = read_json("util_files/criteria_goundtruth.json")  
+    groundtruth = read_json("util_files/criteria_groundtruth.json")  
 
     # list of sentences used to compute the idf weights, providing all reference sentences for all criteria to keep it simple
     all_gt = []
