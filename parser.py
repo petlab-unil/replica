@@ -140,7 +140,7 @@ if __name__ == '__main__':
     from json import dump
     args = init_arguments()
     if args.input is None:
-        print('Bro, seriously... This code needs an input to run...')
+        print('Please specify an input file with the --input parameter.')
         exit(1)
     documents, parsers = start_parsing(args.input, args.map, args.verbose)
     map = args.map
