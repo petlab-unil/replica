@@ -19,7 +19,7 @@
 
 This repository contains the code used for a proof-of-concept screening tool developed
 by the PET Lab at the University of Lausanne. This tool is used in the context
-of the REPLICA project. This tool detects whether the text from a PDF of an article
+of the REPLICA project. The CHI 2023 paper can be found here (TBA). This tool detects whether the text from a PDF of an article
 meets a criterion.
 
 ## Installing REPLICA
@@ -142,6 +142,9 @@ Thus, the command to obtain predictions for the parsed PDFs in ```output/```:
 ```
 python criteria_screener.py -f output/
 ```
+
+The output is stored in the form of a predictions.csv file where each row contains the prediction for one article for all the criteria checked.
+Another outout file called sentences.csv is also stored which gives details on the sentences evaluated for an article and their respective scores.
 
 The reference sentences for each criterion used for similarity filtering is present in [criteria_groundtruth.json](util_files/criteria_goundtruth.json).
 The threshold hyperparameter for each criterion used for similarity filtering is present in [threshold_scores.json](util_files/threshold_scores.json).
