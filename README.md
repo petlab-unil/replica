@@ -149,3 +149,11 @@ Another outout file called sentences.csv is also stored which gives details on t
 
 The reference sentences for each criterion used for similarity filtering is present in [criteria_groundtruth.json](util_files/criteria_goundtruth.json).
 The threshold hyperparameter for each criterion used for similarity filtering is present in [threshold_scores.json](util_files/threshold_scores.json).
+
+## Citation
+If you use this in your research please consider citing
+
+TBA
+
+## Acknowledgement
+This would not have been possible without the amazing repositories of HuggingFace [Transformers](https://github.com/huggingface/transformers) and [BERTScore](https://github.com/Tiiiger/bert_score)
