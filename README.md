@@ -46,7 +46,7 @@ $ pip install -r requirements.txt
 If everything went smoothly, you are all set to start using the tool.
 
 ## Architecture of the proof-of-concept screening tool
-![the architecture diagram](documentation/figures/automation.eps)
+![the architecture diagram](documentation/figures/automation.jpg)
 
 ## PDF Parsing
 This step involves preprocessing the PDF files of the articles to extract the content from it.
