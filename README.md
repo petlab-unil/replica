@@ -1,3 +1,5 @@
+# REPLICA Automated Criteria Screening Tool
+
 <!-- @import "[TOC]" {cmd="toc" depthFrom=1 depthTo=6 orderedList=false} -->
 
 <!-- code_chunk_output -->
@@ -15,7 +17,6 @@
 
 <!-- /code_chunk_output -->
 
-# REPLICA Automated Criteria Screening Tool
 
 This repository contains the code used for a proof-of-concept screening tool developed
 by the PET Lab at the University of Lausanne. This tool is used in the context
