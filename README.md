@@ -125,14 +125,14 @@ optional arguments:
                         The path containing the output of the PDF parser
   -o OUTPUT, --output OUTPUT
                         The output path to store the predictions, stores in output/ by default
-  -s, --similarity      Enables BERTScore similarity matching to filter sentences
-  -c, --classifier      Enables zero-shot text classifier
+  -ns, --no_similarity  Disables BERTScore similarity matching to filter sentences
+  -nc, --no_classifier  Disables zero-shot text classifier
 ```
 
 The input filepath is a mandatory parameter. 
 This should ideally be the output folder from the parser. 
 You can choose to use the similarity filter or the zero-shot text classifier or both while determining if the sentence satisfies the criterion. 
-Using both the options optimizes to give high F1 scores and hence is used in the REPLICA paper. 
+Using both the options optimizes to give high F1 scores and hence is used in the REPLICA paper. By default, both are set to be True
 Thus, the command to obtain predictions for the parsed PDFs in ```output/```:
 
 

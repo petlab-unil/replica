@@ -16,10 +16,10 @@ def init_arguments():
                                                 type=str, action='store')
     parser.add_argument('-o', '--output', help='The output path to store the predictions, stores in output/ by default',
                         type=str, default='output', action='store')
-    parser.add_argument('-s', '--similarity', help='Enables BERTScore similarity matching to filter sentences',
-                         default=True, action='store_true')
-    parser.add_argument('-c', '--classifier', help='Enables zero-shot text classifier',
-                        default=True, action='store_true')
+    parser.add_argument('-ns', '--no_similarity', help='Disables BERTScore similarity matching to filter sentences',
+                         default=True, action='store_false')
+    parser.add_argument('-nc', '--no_classifier', help='Disables zero-shot text classifier',
+                        default=True, action='store_false')
     args = parser.parse_args()
     return args
 
@@ -120,8 +120,7 @@ def check_criteria(filepath, use_sim_score = True, use_zero_shot_classifier = Tr
         ), "Either of use_sim_score or use_zero_shot_classifier should be True"
 
     files = []
-    test_files = []
-
+    
     if isdir(filepath):
         files = [join(filepath, filename) for filename in listdir(filepath) if '.json' in filename]
     elif '.json' in filepath:
@@ -153,24 +152,31 @@ def check_criteria(filepath, use_sim_score = True, use_zero_shot_classifier = Tr
 
         paper_prediction = {}
         for key in groundtruth["zero_shot"][0]:
+        # for key in ['Grouping']:
             print('Checking criteria {}\n----'.format(key))
 
             if use_sim_score:
                 sim_results = calculate_sim_scores(scorer, sentences, groundtruth["sim_matcher"][0][key], threshold["zero_shot"][0][key], key)
+            else:
+                sim_results = {'criteria': [key]*len(sentences), 'sentences': sentences, 'sim_scores': [0]*len(sentences)}
+
 
             if use_zero_shot_classifier:
                 if len(sim_results['sentences'])>0:
                     results = classify_criteria(classifier, sim_results['sentences'], groundtruth['zero_shot'][0][key])
-
+                else: results = {'sequence': [], 'labels': [], 'scores': []}
                 # concatenating the results from similarity filter and classifier in a dataframe
                 df_scores = pd.concat([pd.DataFrame(sim_results), pd.DataFrame(results)], axis=1)
                 df_scores['paper_title'] = [basename(json_file)]*len(df_scores)
                 df_scores['max_label_score'] = df_scores['scores'].apply(lambda x:x[0])
+            else:
+                df_scores = pd.DataFrame(sim_results)
+                df_scores = df_scores.rename(columns={'sim_scores':'max_label_score'})
                 
-                # if any of the sentence crosses the threshold probability, prediction is marked as 1 for that paper title and criteria
-                paper_prediction[key] = [int(any(df_scores['max_label_score'] > threshold_prob))]
-                scores.append(df_scores)
-        # TODO handle the case if one of use_sim_score or use_zero_shot_classifier is False
+            # if any of the sentence crosses the threshold probability, prediction is marked as 1 for that paper title and criteria
+            paper_prediction[key] = [int(any(df_scores['max_label_score'] > threshold_prob))]
+            scores.append(df_scores)
+       
         paper_prediction['paper_title'] = [basename(json_file)]
         predictions.append(pd.DataFrame(paper_prediction))
 
@@ -178,9 +184,11 @@ def check_criteria(filepath, use_sim_score = True, use_zero_shot_classifier = Tr
     pred = pd.concat(predictions)
     pred.fillna(0, inplace=True)
 
-    if not isdir(args.output):
-        makedirs(args.output)
+    if args.output is not None:
+        if not isdir(args.output):
+            makedirs(args.output)
 
+   
     pred.to_csv(join(args.output, "predictions.csv"))
     final.to_csv(join(args.output, "sentences.csv"))
 
@@ -191,4 +199,4 @@ if __name__ == '__main__':
         print('\nPath to the PDF parsed files must be specified.... \n\n')
         exit(1)
 
-    check_criteria(filepath=args.filepath, use_sim_score=args.similarity, use_zero_shot_classifier=args.classifier)
+    check_criteria(filepath=args.filepath, use_sim_score=args.no_similarity, use_zero_shot_classifier=args.no_classifier)

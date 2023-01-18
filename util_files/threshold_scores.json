@@ -14,5 +14,5 @@
     "Preprocessing and data blinding" : 0.80,
     "Hypothesis": 0.80,
     "Anonymization": 0.77,
-    "Grouping" : 0.83}]
+    "Grouping" : 0.79}]
 }
