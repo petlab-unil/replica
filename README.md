@@ -14,6 +14,9 @@
     - [Understanding the parsing mechanism](#understanding-the-parsing-mechanism)
   - [Criteria Screening](#criteria-screening)
     - [Using the criteria screener](#using-the-criteria-screener)
+    - [Screening large number of PDFs](#screening-large-number-of-pdfs)
+    - [Citation](#citation)
+    - [Acknowledgements](#acknowledgement)
 
 <!-- /code_chunk_output -->
 
@@ -145,6 +148,11 @@ Another outout file called sentences.csv is also stored which gives details on t
 
 The reference sentences for each criterion used for similarity filtering is present in [criteria_groundtruth.json](util_files/criteria_goundtruth.json).
 The threshold hyperparameter for each criterion used for similarity filtering is present in [threshold_scores.json](util_files/threshold_scores.json).
+The labels used for zero-shot classifier is also present in [criteria_groundtruth.json](util_files/criteria_goundtruth.json) under the "zero-shot" node.
+
+### Screening large number of PDFs
+The criteria screener does not require a GPU to run. It can run on a CPU. However if you plan to run it on a several (>20) PDFs, it is advised to use a 
+GPU for faster results. No change in code required, the script uses a GPU if there is one present.
 
 ## Citation
 If you use this in your research please consider citing
@@ -152,4 +160,4 @@ If you use this in your research please consider citing
 TBA
 
 ## Acknowledgement
-This would not have been possible without the amazing repositories of HuggingFace [Transformers](https://github.com/huggingface/transformers) and [BERTScore](https://github.com/Tiiiger/bert_score)
+This would not have been possible without the amazing repositories of HuggingFace [Transformers](https://github.com/huggingface/transformers), [BERTScore](https://github.com/Tiiiger/bert_score) and [Pdfminer.six](https://github.com/pdfminer/pdfminer.six)
