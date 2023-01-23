@@ -67,6 +67,34 @@ Below is an example of a mapping:
 ```
 We currently use mappings from the style only to detect the title of the paper.
 
+#### Dynamic mapping
+While developping our project, we observed that parsing PDFs did sometimes output blank (or empty) structures.
+ Thus, referring to the later exposed class diagram, the document object had neither Sections, titles and sentences in it.
+ It also happened that some of the titles were incorporated in the sentences, creating issues for the next processing steps.
+As we could not manually map all the different variation of these styles, we implemented a simple dynamic mapping process.
+Basically, it will prompt for a sample word, e.g., a section title, and look for the styles associated with this word.
+Matching is case sensitive, to reduce the possibilities of mismatch.  
+The parser will prompt for dynamic mapping in case it detects empty document structures in the parsed batch.
+You will be asked different information as demonstrated in the following code block:
+```
+Found 5 issues in the current parsing batch
+Do you want to correct them? [Y/n] Y
+Specify a reference word: [INTRODUCTION]
+Reparsing ████████████████████████████████ 5/5 100%
+```
+By default the agreement to correct them is set to Y, meaning yes. Similarly, the *reference word* is by default set to
+*INTRODUCTION*, as we observed that many papers in our batches had this section. Obviously, if you are interested in mapping the style
+of another type of information (e.g., figure captions) you could specify the *reference word* that has the style you are looking for.
+Then, the parser will reprocess the papers for which it had no content. This process will also create a new mapping file, that you
+can later use with the *-m* argument (see section *Using the parser*).
+
+#### Rationale for using mappings
+This project was mainly developped in the scope of one research study that we conducted. However, as we plan to keep
+working on it, and to make this tool as useful as possible, we introduced some flexibility in the structure detection.
+Even if at the moment, only the titles and sections are detected, other researchers, or us, could decide to look for different
+part of the articles' structures. In addition, title styles for other venues and journals than the ones we studied might be different.
+Thus, using such approach, we believe that this tool could be reused in other context and studies in the long term.
+
 ### Using the parser
 The parser offers the following options:
 ```
