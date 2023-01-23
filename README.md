@@ -15,8 +15,8 @@
   - [Criteria Screening](#criteria-screening)
     - [Using the criteria screener](#using-the-criteria-screener)
     - [Screening large number of PDFs](#screening-large-number-of-pdfs)
-    - [Citation](#citation)
-    - [Acknowledgements](#acknowledgement)
+  - [Citation](#citation)
+  - [Acknowledgements](#acknowledgement)
 
 <!-- /code_chunk_output -->
 
