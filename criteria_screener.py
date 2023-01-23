@@ -136,7 +136,7 @@ def check_criteria(filepath, use_sim_score = True, use_zero_shot_classifier = Tr
     for key in groundtruth['sim_matcher'][0]: all_gt.extend(groundtruth["sim_matcher"][0][key])
     
     if use_sim_score: scorer = BERTScorer(model_type="distilbert-base-uncased", idf=True, idf_sents=all_gt)
-    if use_zero_shot_classifier: classifier = pipeline("zero-shot-classification", device=0)
+    if use_zero_shot_classifier: classifier = pipeline("zero-shot-classification")
     
     # read the threshold scores for similarity filter, different for each criteria
     threshold = read_json("util_files/threshold_scores.json")
@@ -188,7 +188,6 @@ def check_criteria(filepath, use_sim_score = True, use_zero_shot_classifier = Tr
         if not isdir(args.output):
             makedirs(args.output)
 
-   
     pred.to_csv(join(args.output, "predictions.csv"))
     final.to_csv(join(args.output, "sentences.csv"))
 
