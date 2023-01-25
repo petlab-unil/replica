@@ -152,7 +152,6 @@ def check_criteria(filepath, use_sim_score = True, use_zero_shot_classifier = Tr
 
         paper_prediction = {}
         for key in groundtruth["zero_shot"][0]:
-        # for key in ['Grouping']:
             print('Checking criteria {}\n----'.format(key))
 
             if use_sim_score:

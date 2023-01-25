@@ -185,7 +185,9 @@ GPU for faster results. No change in code required, the script uses a GPU if the
 ## Citation
 If you use this in your research please consider citing
 
-TBA
+*Kavous Salehzadeh Niksirat, Lahari Goswami, Pooja S. B. Rao, James Tyler, Alessandro Silacci, Sadiq Aliyu, Annika Aebli, Chat Wacharamanotham, and Mauro Cherubini. 2023. Changes in Research Ethics, Openness, and Transparency in Empirical Studies between CHI 2017 and CHI 2022. In Proceedings of the 2023 CHI Conference on Human Factors in Computing Systems (CHI ’23), April 23–28, 2023, Hamburg, Germany. ACM, New York, NY, USA, 23 pages. https://doi.org/10.1145/3544548.3580848*
+
+All the supplementary materials are available at: http://doi.org/10.17605/OSF.IO/N25D6
 
 ## Acknowledgement
 This would not have been possible without the amazing repositories of HuggingFace [Transformers](https://github.com/huggingface/transformers), [BERTScore](https://github.com/Tiiiger/bert_score) and [Pdfminer.six](https://github.com/pdfminer/pdfminer.six)
