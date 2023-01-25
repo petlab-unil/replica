@@ -89,8 +89,8 @@ Then, the parser will reprocess the papers for which it had no content. This pro
 can later use with the *-m* argument (see section *Using the parser*).
 
 #### Rationale for using mappings
-This project was mainly developped in the scope of one research study that we conducted. However, as we plan to keep
-working on it, and to make this tool as useful as possible, we introduced some flexibility in the structure detection.
+This project was mainly developped in the scope of one research study that we conducted. However, to make this tool as useful as 
+possible, we introduced some flexibility in the structure detection.
 Even if at the moment, only the titles and sections are detected, other researchers, or us, could decide to look for different
 part of the articles' structures. In addition, title styles for other venues and journals than the ones we studied might be different.
 Thus, using such approach, we believe that this tool could be reused in other context and studies in the long term.
